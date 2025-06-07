@@ -5,6 +5,7 @@ import * as crypto from 'crypto';
 import { Software, QueryTransactionListRequest } from './navApiTypes';
 import * as js2xmlparser from "js2xmlparser";
 import * as libxmljs from 'libxmljs2';
+import { parseStringPromise } from 'xml2js
 
 interface NavApiConfig {
   baseUrl: string;
@@ -94,9 +95,38 @@ export class NavApiClient {
   }
 
   private async requestExchangeKey() {
-    // implementáld a cserekulcs kérését, hasonló struktúrával!
-    // ...
-    this.exchangeKey = "EXAMPLE_EXCHANGE_KEY";
+    // XML request body
+    const req = `
+      <ExchangeTokenRequest xmlns="http://schemas.nav.gov.hu/OSA/3.0/api">
+        <header>
+          <requestId>${this.getRequestId()}</requestId>
+          <timestamp>${this.getTimestamp()}</timestamp>
+          <requestVersion>3.0</requestVersion>
+        </header>
+        <user>
+          <login>${this.config.user}</login>
+          <passwordHash>${this.sha512(this.config.password)}</passwordHash>
+          <taxNumber>${this.config.taxNumber}</taxNumber>
+        </user>
+        <software>
+          <softwareId>123456789123456789</softwareId>
+          <softwareName>NavApiClient</softwareName>
+          <softwareOperation>LOCAL_SOFTWARE</softwareOperation>
+          <softwareMainVersion>1.0</softwareMainVersion>
+          <softwareDevName>Example Dev</softwareDevName>
+          <softwareDevContact>dev@example.com</softwareDevContact>
+          <softwareDevCountryCode>HU</softwareDevCountryCode>
+          <softwareDevTaxNumber>12345676</softwareDevTaxNumber>
+        </software>
+      </ExchangeTokenRequest>
+    `;
+    const resp = await axios.post(
+      this.config.baseUrl + '/tokenExchange',
+      req,
+      { headers: { 'Content-Type': 'application/xml' } }
+    );
+    const xml =  await parseStringPromise(resp.data);
+    this.exchangeKey = xml.ExchangeTokenResponse.exchangeToken[0];
     return this.exchangeKey;
   }
 }
