@@ -7,5 +7,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Zoltán István KADA",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "install": "^0.13.0",
+    "js2xmlparser": "^5.0.0",
+    "libxmljs2": "^0.37.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
 }

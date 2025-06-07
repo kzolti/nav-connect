@@ -1,0 +1,18 @@
+{
+  "baseUrl": "https://api-test.onlineszamla.nav.gov.hu/invoiceService/v3",
+  "user": "TECH_USER",
+  "password": "TECH_PASS",
+  "taxNumber": "12345678",
+  "signatureKey": "SIG_KEY",
+  "exchangeKey": "",
+  "software": {
+    "softwareId": "123456789123456789",
+    "softwareName": "NavApiClient",
+    "softwareOperation": "LOCAL_SOFTWARE",
+    "softwareMainVersion": "1.0",
+    "softwareDevName": "Example Dev",
+    "softwareDevContact": "dev@example.com",
+    "softwareDevCountryCode": "HU",
+    "softwareDevTaxNumber": "12345676"
+  }
+}
