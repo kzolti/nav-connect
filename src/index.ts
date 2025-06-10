@@ -1,22 +1,23 @@
-import { NavApiClient } from './navApiClient';
-import { QueryTransactionListRequest } from './navApiTypes';
+import { NavApiClient } from "./navApiClient";
+// import { QueryTransactionListRequest } from './navApiTypes';
 
 async function main() {
   const client = new NavApiClient();
-  const req: QueryTransactionListRequest = {
-  header: { ... },
-  user: { ... },
-  page: 1,
-  pageSize: 10,
-  software: { ... },
-  transactionQueryParams: {
+  // client.queryTransactionList({
+  //   page: 1,
+  //   insDate: {
+  //     dateTimeFrom: "2024-01-01T00:00:00Z",
+  //     dateTimeTo: "2024-01-31T23:59:59Z",
+  //   },
+  // });
+  client.queryInvoiceDigest({
+    page: 1,
     insDate: {
-      dateFrom: "2024-01-01T00:00:00Z",
-      dateTo: "2024-01-31T23:59:59Z"
-    }
-    // vagy completionDate, vagy transactionIdList stb.
-  }
-};
-  const result = await client.queryTransactionList(req);
-  console.log(result);
+      dateTimeFrom: "2025-06-01T00:00:00Z",
+      dateTimeTo: "2025-06-30T23:59:59Z",
+    },
+    invoiceDirectionType:"INBOUND"
+  });
+  // console.log(result);
 }
+main();
