@@ -1,13 +1,27 @@
 {
-  "name": "nav-osa",
+  "name": "nav-connect",
   "version": "1.0.0",
   "description": "Nav Online Invoice client",
-  "main": "index.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build/**/*"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node src/index.ts",
-    "build": "rm -rf build/* && npx tsc && cp -r OSA build/OSA"
+    "build": "rm -rf build/* && npx tsc && cp -r OSA build/OSA",
+    "prepare": "npm run build",
+    "release:patch": "npm version patch && git push && git push --tags && npm publish",
+    "release:minor": "npm version minor && git push && git push --tags && npm publish",
+    "release:major": "npm version major && git push && git push --tags && npm publish"
   },
+  "keywords": [
+    "nav",
+    "online-invoice",
+    "hungary",
+    "invoice"
+  ],
   "author": "Zoltán István KADA",
   "license": "MIT",
   "engines": {
