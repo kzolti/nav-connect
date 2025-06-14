@@ -61,7 +61,8 @@ type VatCodeType = "1" | "2" | "3" | "4" | "5"; // VAT code (1-5)
  * Common API types
  */
 type BusinessResultCodeType = "ERROR" | "WARN" | "INFO";
-type EntityIdType = string; // 1-30 chars, alphanumeric with + and _
+/** 1-30 characters, alphanumeric with + and _ */
+type EntityIdType = string;
 type FunctionCodeType = "OK" | "ERROR";
 type LoginType = string; // 6-15 alphanumeric chars
 type RequestPageType = number; // Positive integer (>=1)
@@ -72,34 +73,18 @@ type TechnicalResultCodeType = "CRITICAL" | "ERROR";
  * Complex types
  */
 
-// interface BasicHeaderType {
-//   $: {
-//     name: "xmlns:common";
-//     value: "http://schemas.nav.gov.hu/NTCA/1.0/common";
-//     prefix: "xmlns";
-//     local: "common";
-//     uri: "http://www.w3.org/2000/xmlns/";
-//   };
-//   requestId: EntityIdType;
-//   timestamp: GenericTimestampType;
-//   requestVersion: "3.0";
-//   headerVersion: "1.0";
-// }
-
 interface BasicHeaderType {
-  "common:requestId": EntityIdType;
-  "common:timestamp": GenericTimestampType;
-  "common:requestVersion": "3.0";
-  "common:headerVersion": "1.0";
+  requestId: EntityIdType;
+  timestamp: GenericTimestampType;
+  requestVersion: "3.0";
+  headerVersion: "1.0";
 }
 
 interface BasicRequestType {
-  "@": {
-    xmlns: "http://schemas.nav.gov.hu/OSA/3.0/api";
-    "xmlns:common": "http://schemas.nav.gov.hu/NTCA/1.0/common";
-  };
-  "common:header": BasicHeaderType;
-  "common:user": UserHeaderType;
+  "@_xmlns": "http://schemas.nav.gov.hu/OSA/3.0/api";
+  "@_xmlns:common": "http://schemas.nav.gov.hu/NTCA/1.0/common";
+  header: BasicHeaderType;
+  user: UserHeaderType;
 }
 
 interface BasicResponseType {
@@ -139,15 +124,15 @@ interface TechnicalValidationResultType {
 }
 
 interface UserHeaderType {
-  "common:login": LoginType;
-  "common:passwordHash": {
-    "@": { cryptoType: "SHA-512" }; // attribútum!
-    "#": SimpleText512NotBlankType; // érték!
+  login: LoginType;
+  passwordHash: {
+    "@_cryptoType": "SHA-512"  // attribútum!
+    "#text": SimpleText512NotBlankType; // érték!
   };
-  "common:taxNumber": TaxpayerIdType;
-  "common:requestSignature": {
-    "@": { cryptoType: "SHA3-512" }; // attribútum!
-    "#": SimpleText512NotBlankType; // érték!
+  taxNumber: TaxpayerIdType;
+  requestSignature: {
+    "@_cryptoType": "SHA3-512" ; // attribútum!
+    "#text": SimpleText512NotBlankType; // érték!
   };
 }
 
