@@ -69,7 +69,7 @@ Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 ### Attribution Requirements
 When using this software, you must give appropriate credit to:
 - Author: Zoltán István KADA
-- Company: KadatSoft
+- Company: kAdatSoft
 - Repository: https://github.com/kzolti/nav-connect
 
 ## Author
