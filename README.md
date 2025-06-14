@@ -20,7 +20,7 @@ import { NavConnect } from 'nav-connect';
 
 const navClient = new NavConnect({
   testSystem: true, // set to false for production
-  taxNumber: '12345678',
+  taxNumber: '12345678',  // technical user taxpayerid, The 8-digit core number section of the tax number
   technicalUser: {
     user: 'yourUserName',
     password: 'yourPassword',
@@ -28,8 +28,8 @@ const navClient = new NavConnect({
     exchangeKey: 'yourExchangeKey'
   },
   software: {
-    softwareId: 'NAVCONNECT-1.0.0', // Must be exactly 18 characters [0-9A-Z\-]
-    softwareName: 'NavConnect',      // Max 50 characters, not empty
+    softwareId: 'YOUR-SOFTWARE-ID', // Must be exactly 18 characters [0-9A-Z\-]
+    softwareName: 'YourSoftwareName',      // Max 50 characters, not empty
     softwareOperation: 'LOCAL_SOFTWARE', // Must be either 'LOCAL_SOFTWARE' or 'ONLINE_SERVICE'
     softwareMainVersion: '1.0.0',    // Max 15 characters, not empty
     softwareDevName: 'Your Name',    // Max 512 characters, not empty
@@ -54,53 +54,21 @@ async function queryInvoices() {
 }
 ```
 
-## Configuration
-
-### TechnicalUser Interface
-```typescript
-interface TechnicalUser {
-  user: string;          // Technical user name
-  password: string;      // Technical user password
-  signatureKey: string;  // Signature key for XML signing
-  exchangeKey: string;   // Exchange key
-}
-```
-
-### SoftwareType Interface
-```typescript
-interface SoftwareType {
-  softwareId: string;           // Exactly 18 characters [0-9A-Z\-]
-  softwareName: string;         // Max 50 characters, not empty
-  softwareOperation: string;    // 'LOCAL_SOFTWARE' | 'ONLINE_SERVICE'
-  softwareMainVersion: string;  // Max 15 characters, not empty
-  softwareDevName: string;      // Max 512 characters, not empty
-  softwareDevContact: string;   // Max 200 characters, not empty
-  softwareDevCountryCode?: string; // ISO-3166 alpha-2 country code
-  softwareDevTaxNumber?: string;   // Max 50 characters
-}
-```
-
 ## Available Endpoints
 
 Currently supported endpoint:
 - `queryInvoiceDigest` - Query invoice data with filtering options
 
-## Environment
-
-The `testSystem` configuration parameter determines which environment is used:
-- `true`: Test environment
-- `false`: Production environment
-
 ## License
 
-MIT License - see the [LICENSE](LICENSE) file for details.
+Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+### Attribution Requirements
+When using this software, you must give appropriate credit to:
+- Author: Zoltán István KADA
+- Company: KadatSoft
+- Repository: https://github.com/kzolti/nav-connect
 
 ## Author
 
-Zoltán István KADA
-
-## Version History
-
-### 1.0.0
-- Initial release
-- Implementation of queryInvoiceDigest endpoint
+Zoltán István KADA (kAdatSoft)
