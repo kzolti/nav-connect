@@ -16,7 +16,7 @@ npm install nav-connect
 ## Basic Usage
 
 ```typescript
-import { NavConnect } from 'nav-connect';
+import NavConnect from 'nav-connect';
 
 const navClient = new NavConnect({
   testSystem: true, // set to false for production
