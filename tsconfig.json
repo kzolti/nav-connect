@@ -22,6 +22,9 @@
     "rootDir": "src",
     //"noEmit":true,
     "sourceMap": true,
+    "declaration": true,
+    "declarationDir": "build",
+    "emitDeclarationOnly": false,
     
   },
   "include": [
