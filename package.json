@@ -5,12 +5,13 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "files": [
-    "build/**/*"
+    "build/**/*",
+    "OSA/**/*"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "ts-node src/index.ts",
-    "build": "rm -rf build/* && npx tsc && cp -r OSA build/OSA",
+    "build": "rm -rf build/* && npx tsc",
     "prepare": "npm run build",
     "release:patch": "npm version patch && git push && git push --tags && npm publish",
     "release:minor": "npm version minor && git push && git push --tags && npm publish",
