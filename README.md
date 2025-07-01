@@ -44,7 +44,7 @@ async function queryInvoices() {
   try {
     const response = await navClient.queryInvoiceDigest({
       page: 1,
-      invoiceDirection: 'OUTBOUND',
+      invoiceDirectionType: "OUTBOUND",
       insDate: {
         dateTimeFrom: "2025-06-01T00:00:00Z",
         dateTimeTo: "2025-06-30T23:59:59Z",
