@@ -13,6 +13,7 @@ import {
   SoftwareType,
 } from "./osaTypes/invoiceApiTypes";
 import { BasicHeaderType, BasicRequestType, EntityIdType } from "./osaTypes/commonTypes";
+import { normalizeTaxNumbers } from "./normalizeTaxNumbers";
 
 interface technicalUser {
   user: string;
@@ -68,6 +69,7 @@ class NavConnect {
       try {
         const xsdBuffer = readFileSync(xsdPath);
         const baseUrl = dirname(xsdPath);
+        
         
         // Fájlnév kinyerése és konvertálása enum-má
         const schemaName = path.basename(xsdPath, '.xsd');
@@ -241,7 +243,7 @@ class NavConnect {
   private async processXmlResponse<T>(xmlData: string): Promise<T> {
     try {
       const result = this._parser.parse(xmlData);
-      return result as T;
+      return normalizeTaxNumbers(result) as T;  // taxNumbers always string
     } catch (err) {
       console.error("XML response processing error:", err);
       throw err;
