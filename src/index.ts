@@ -17,7 +17,7 @@ import {
   SoftwareType,
 } from "./osaTypes/invoiceApiTypes";
 import { BasicHeaderType, BasicRequestType, EntityIdType } from "./osaTypes/commonTypes";
-import { normalizeTaxNumbers } from "./normalizeTaxNumbers";
+import { processXmlResponse } from "./xmlParser";
 
 interface technicalUser {
   user: string;
@@ -49,7 +49,6 @@ class NavConnect {
   private _schemaDir: string;
   private _baseUrl: string;
   private _builder: XMLBuilder;
-  private _parser: XMLParser;
   private _requestIdPrefix: string;
   private xsdDocs: XsdDocuments;
 
@@ -73,14 +72,14 @@ class NavConnect {
       try {
         const xsdBuffer = readFileSync(xsdPath);
         const baseUrl = dirname(xsdPath);
-        
-        
+
+
         // Fájlnév kinyerése és konvertálása enum-má
         const schemaName = path.basename(xsdPath, '.xsd');
         const schemaType = Object.values(XsdSchema).find(
           value => value === schemaName
         );
-        
+
         if (!schemaType) {
           throw new Error(`Invalid schema name: ${schemaName}`);
         }
@@ -96,7 +95,7 @@ class NavConnect {
         throw error;
       }
     }
-  
+
     const xmlBuilderOptions = {
       attributeNamePrefix: "@_",
       textNodeName: "#text",
@@ -106,17 +105,6 @@ class NavConnect {
       suppressEmptyNode: false,
     };
     this._builder = new XMLBuilder(xmlBuilderOptions);
-    // Parser inicializálása
-    this._parser = new XMLParser({
-      attributeNamePrefix: "@_",
-      textNodeName: "#text",
-      ignoreAttributes: false,
-      parseAttributeValue: true,
-      trimValues: true,
-      parseTagValue: true,
-      ignoreDeclaration: true,
-      removeNSPrefix: true,
-    });
   }
 
   private addNamespacePrefix(obj: any, prefix: string): any {
@@ -244,22 +232,12 @@ class NavConnect {
     }
   }
 
-  private async processXmlResponse<T>(xmlData: string): Promise<T> {
-    try {
-      const result = this._parser.parse(xmlData);
-      return normalizeTaxNumbers(result) as T;  // taxNumbers always string
-    } catch (err) {
-      console.error("XML response processing error:", err);
-      throw err;
-    }
-  }
-
   async queryInvoiceDigest(params: {
     page: number;
     insDate: DateTimeIntervalParamType;
     invoiceDirectionType: InvoiceDirectionType;
   }): Promise<QueryInvoiceDigestResponse> {
-    const reqObj:QueryInvoiceDigestRequest = {
+    const reqObj: QueryInvoiceDigestRequest = {
       ...this.createBasicOnlineInvoiceRequest(),
       page: params.page,
       invoiceDirection: params.invoiceDirectionType,
@@ -274,14 +252,14 @@ class NavConnect {
       const requestXml = await this.generateAndValidateXml(
         "QueryInvoiceDigestRequest",
         reqObj,
-        XsdSchema.InvoiceApi 
+        XsdSchema.InvoiceApi
       );
 
       const response = await axios.post(this._baseUrl + "/queryInvoiceDigest", requestXml, {
         headers: { "Content-Type": "application/xml" },
       });
 
-      const result = await this.processXmlResponse<{
+      const result = await processXmlResponse<{
         QueryInvoiceDigestResponse: QueryInvoiceDigestResponse;
       }>(response.data);
 
@@ -291,13 +269,13 @@ class NavConnect {
       throw error;
     }
   }
-  async queryInvoiceData(params:InvoiceNumberQueryType): Promise<QueryInvoiceDataResponse> {
-    const reqObj:QueryInvoiceDataRequest = {
+  async queryInvoiceData(params: InvoiceNumberQueryType): Promise<QueryInvoiceDataResponse> {
+    const reqObj: QueryInvoiceDataRequest = {
       ...this.createBasicOnlineInvoiceRequest(),
-      invoiceNumberQuery:{
-        invoiceNumber:params.invoiceNumber,
-        invoiceDirection:params.invoiceDirection,
-        supplierTaxNumber:params.supplierTaxNumber
+      invoiceNumberQuery: {
+        invoiceNumber: params.invoiceNumber,
+        invoiceDirection: params.invoiceDirection,
+        supplierTaxNumber: params.supplierTaxNumber
       }
     };
 
@@ -311,8 +289,7 @@ class NavConnect {
       const response = await axios.post(this._baseUrl + "/queryInvoiceData", requestXml, {
         headers: { "Content-Type": "application/xml" },
       });
-
-      const result = await this.processXmlResponse<{
+      const result = await processXmlResponse<{
         QueryInvoiceDataResponse: QueryInvoiceDataResponse;
       }>(response.data);
 
