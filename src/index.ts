@@ -9,6 +9,10 @@ import {
   BasicOnlineInvoiceRequestType,
   DateTimeIntervalParamType,
   InvoiceDirectionType,
+  InvoiceNumberQueryType,
+  QueryInvoiceDataRequest,
+  QueryInvoiceDataResponse,
+  QueryInvoiceDigestRequest,
   QueryInvoiceDigestResponse,
   SoftwareType,
 } from "./osaTypes/invoiceApiTypes";
@@ -226,7 +230,7 @@ class NavConnect {
         noblanks: true,
         nonet: true,
       });
-
+      // console.log(xml);
       const isValid = xmlDoc.validate(xsdDoc);
       if (!isValid) {
         const errors = xmlDoc.validationErrors.map((error) => error.message);
@@ -255,7 +259,7 @@ class NavConnect {
     insDate: DateTimeIntervalParamType;
     invoiceDirectionType: InvoiceDirectionType;
   }): Promise<QueryInvoiceDigestResponse> {
-    const reqObj = {
+    const reqObj:QueryInvoiceDigestRequest = {
       ...this.createBasicOnlineInvoiceRequest(),
       page: params.page,
       invoiceDirection: params.invoiceDirectionType,
@@ -270,7 +274,7 @@ class NavConnect {
       const requestXml = await this.generateAndValidateXml(
         "QueryInvoiceDigestRequest",
         reqObj,
-        XsdSchema.InvoiceApi // Most már enum-ot használunk string helyett
+        XsdSchema.InvoiceApi 
       );
 
       const response = await axios.post(this._baseUrl + "/queryInvoiceDigest", requestXml, {
@@ -284,6 +288,37 @@ class NavConnect {
       return result.QueryInvoiceDigestResponse;
     } catch (error) {
       console.error("Query invoice digest error:", error);
+      throw error;
+    }
+  }
+  async queryInvoiceData(params:InvoiceNumberQueryType): Promise<QueryInvoiceDataResponse> {
+    const reqObj:QueryInvoiceDataRequest = {
+      ...this.createBasicOnlineInvoiceRequest(),
+      invoiceNumberQuery:{
+        invoiceNumber:params.invoiceNumber,
+        invoiceDirection:params.invoiceDirection,
+        supplierTaxNumber:params.supplierTaxNumber
+      }
+    };
+
+    try {
+      const requestXml = await this.generateAndValidateXml(
+        "QueryInvoiceDataRequest",
+        reqObj,
+        XsdSchema.InvoiceApi
+      );
+
+      const response = await axios.post(this._baseUrl + "/queryInvoiceData", requestXml, {
+        headers: { "Content-Type": "application/xml" },
+      });
+
+      const result = await this.processXmlResponse<{
+        QueryInvoiceDataResponse: QueryInvoiceDataResponse;
+      }>(response.data);
+
+      return result.QueryInvoiceDataResponse;
+    } catch (error) {
+      console.error("Query invoice data error:", error);
       throw error;
     }
   }
