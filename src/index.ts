@@ -17,7 +17,7 @@ import {
   SoftwareType,
 } from "./osaTypes/invoiceApiTypes";
 import { BasicHeaderType, BasicRequestType, EntityIdType } from "./osaTypes/commonTypes";
-import { processXmlResponse } from "./xmlParser";
+import { xmlParser } from "./xmlParser";
 
 interface technicalUser {
   user: string;
@@ -43,6 +43,9 @@ interface XsdDocuments extends Map<XsdSchema, libxmljs.Document> {
   set(key: XsdSchema, value: libxmljs.Document): this;
   get(key: XsdSchema): libxmljs.Document | undefined;
 }
+
+export { xmlParser } from "./xmlParser";
+
 class NavConnect {
   private _config: NavApiConfig;
   private _requestCounter: number = 0;
@@ -259,7 +262,7 @@ class NavConnect {
         headers: { "Content-Type": "application/xml" },
       });
 
-      const result = await processXmlResponse<{
+      const result = await xmlParser<{
         QueryInvoiceDigestResponse: QueryInvoiceDigestResponse;
       }>(response.data);
 
@@ -289,7 +292,7 @@ class NavConnect {
       const response = await axios.post(this._baseUrl + "/queryInvoiceData", requestXml, {
         headers: { "Content-Type": "application/xml" },
       });
-      const result = await processXmlResponse<{
+      const result = await xmlParser<{
         QueryInvoiceDataResponse: QueryInvoiceDataResponse;
       }>(response.data);
 

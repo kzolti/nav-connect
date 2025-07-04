@@ -25,7 +25,7 @@ function normalizeTaxNumbers(obj: any): any {
   return obj;
 }
 
-export async function processXmlResponse<T>(xmlData: string): Promise<T> {
+export async function xmlParser<T>(xmlData: string): Promise<T> {
   const parser = new XMLParser({
     attributeNamePrefix: "@_",
     textNodeName: "#text",
