@@ -3,7 +3,7 @@ import { XMLParser } from "fast-xml-parser";
 function normalizeTaxNumbers(obj: any): any {
   if (!obj || typeof obj !== "object") return obj;
 
-  // Kulcsok, amik mindig string típusú adószámot kell tartalmazzanak
+  // always string keys not number 
   const taxKeys = [
     "supplierTaxNumber",
     "customerTaxNumber",
@@ -12,6 +12,8 @@ function normalizeTaxNumbers(obj: any): any {
     "taxNumber",
     "vatGroupMembership",
     "groupMemberTaxNumber",
+
+
   ];
 
   for (const key of Object.keys(obj)) {
@@ -20,6 +22,27 @@ function normalizeTaxNumbers(obj: any): any {
     } else if (typeof obj[key] === "object") {
       // Rekurzívan mélyebbre megy, pl. tömbök, beágyazott objektumok
       obj[key] = normalizeTaxNumbers(obj[key]);
+    }
+  }
+  return obj;
+}
+
+function normalizeArrays(obj: any): any {
+  const keys = [
+    "invoiceDigest",
+
+  ]
+  if (!obj || typeof obj !== "object") return obj;
+  for (const key of Object.keys(obj)) {
+    if (keys.includes(key)) {
+      if (obj[key] === undefined) {
+        obj[key] = [];
+      } else if (!Array.isArray(obj[key])) {
+        obj[key] = [obj[key]];
+      }
+    }
+    if (typeof obj[key] === "object") {
+      obj[key] = normalizeArrays(obj[key]);
     }
   }
   return obj;
@@ -38,8 +61,7 @@ export async function xmlParser<T>(xmlData: string): Promise<T> {
   });
   try {
     const result = parser.parse(xmlData);
-    return normalizeTaxNumbers(result) as T;  // taxNumbers always string
-
+    return normalizeArrays(normalizeTaxNumbers(result)) as T;  // taxNumbers always string
   } catch (err) {
     console.error("XML response processing error:", err);
     throw err;
