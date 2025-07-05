@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 
-function normalizeTaxNumbers(obj: any): any {
+function normalizeNumbersAsText(obj: any): any {
   if (!obj || typeof obj !== "object") return obj;
 
   // always string keys not number 
@@ -12,6 +12,7 @@ function normalizeTaxNumbers(obj: any): any {
     "taxNumber",
     "vatGroupMembership",
     "groupMemberTaxNumber",
+    "invoiceNumber"
 
 
   ];
@@ -21,7 +22,7 @@ function normalizeTaxNumbers(obj: any): any {
       obj[key] = String(obj[key]);
     } else if (typeof obj[key] === "object") {
       // Rekurzívan mélyebbre megy, pl. tömbök, beágyazott objektumok
-      obj[key] = normalizeTaxNumbers(obj[key]);
+      obj[key] = normalizeNumbersAsText(obj[key]);
     }
   }
   return obj;
@@ -61,7 +62,7 @@ export async function xmlParser<T>(xmlData: string): Promise<T> {
   });
   try {
     const result = parser.parse(xmlData);
-    return normalizeArrays(normalizeTaxNumbers(result)) as T;  // taxNumbers always string
+    return normalizeArrays(normalizeNumbersAsText(result)) as T;  // taxNumbers always string
   } catch (err) {
     console.error("XML response processing error:", err);
     throw err;
