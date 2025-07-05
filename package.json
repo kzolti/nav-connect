@@ -1,6 +1,6 @@
 {
   "name": "nav-connect",
-  "version": "2.0.12",
+  "version": "2.0.13",
   "description": "Nav Online Invoice client",
   "main": "build/index.js",
   "types": "build/index.d.ts",
