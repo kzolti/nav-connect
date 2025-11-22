@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path, { dirname } from "path";
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import * as crypto from "crypto";
 import * as libxmljs from "libxmljs2";
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
@@ -19,7 +19,7 @@ import {
 import { BasicHeaderType, BasicRequestType, EntityIdType } from "./osaTypes/commonTypes";
 import { xmlParser } from "./xmlParser";
 
-interface technicalUser {
+interface TechnicalUser {
   user: string;
   password: string;
   signatureKey: string;
@@ -29,7 +29,7 @@ interface technicalUser {
 export interface NavApiConfig {
   testSystem: boolean;
   taxNumber: string;
-  technicalUser: technicalUser;
+  technicalUser: TechnicalUser;
   software: SoftwareType;
 }
 export enum XsdSchema {
@@ -54,6 +54,7 @@ class NavConnect {
   private _builder: XMLBuilder;
   private _requestIdPrefix: string;
   private xsdDocs: XsdDocuments;
+  private _client: AxiosInstance;
 
   constructor(config: NavApiConfig) {
     this._config = config;
@@ -62,6 +63,14 @@ class NavConnect {
     this._baseUrl = this._config.testSystem
       ? "https://api-test.onlineszamla.nav.gov.hu/invoiceService/v3/"
       : "https://api.onlineszamla.nav.gov.hu/invoiceService/v3";
+
+    this._client = axios.create({
+      baseURL: this._baseUrl,
+      headers: {
+        "Content-Type": "application/xml",
+      },
+    });
+
     this._schemaDir = path.resolve(__dirname, "..", "OSA", "xsd");
     this.xsdDocs = new Map();
 
@@ -133,7 +142,9 @@ class NavConnect {
 
   private getRequestId(): EntityIdType {
     this._requestCounter++;
-    return this._requestIdPrefix + "+" + Date.now().toString(36) + "+" + this._requestCounter.toString(36);
+    const id = this._requestIdPrefix + "+" + Date.now().toString(36) + "+" + this._requestCounter.toString(36);
+    // NAV limit: max 30 chars
+    return id.slice(0, 30);
   }
 
   private getTimestamp() {
@@ -208,7 +219,7 @@ class NavConnect {
     };
   }
 
-  async generateAndValidateXml(requestType: string, data: any, schemaType: XsdSchema): Promise<string> {
+  async generateAndValidateXml<T>(requestType: string, data: T, schemaType: XsdSchema): Promise<string> {
     try {
       const xsdDoc = this.xsdDocs.get(schemaType);
       if (!xsdDoc) {
@@ -258,9 +269,7 @@ class NavConnect {
         XsdSchema.InvoiceApi
       );
 
-      const response = await axios.post(this._baseUrl + "/queryInvoiceDigest", requestXml, {
-        headers: { "Content-Type": "application/xml" },
-      });
+      const response = await this._client.post("/queryInvoiceDigest", requestXml);
 
       const result = await xmlParser<{
         QueryInvoiceDigestResponse: QueryInvoiceDigestResponse;
@@ -268,7 +277,15 @@ class NavConnect {
 
       return result.QueryInvoiceDigestResponse;
     } catch (error) {
-      console.error("Query invoice digest error:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Query invoice digest Axios error:", {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+        });
+      } else {
+        console.error("Query invoice digest error:", error);
+      }
       throw error;
     }
   }
@@ -289,16 +306,22 @@ class NavConnect {
         XsdSchema.InvoiceApi
       );
 
-      const response = await axios.post(this._baseUrl + "/queryInvoiceData", requestXml, {
-        headers: { "Content-Type": "application/xml" },
-      });
+      const response = await this._client.post("/queryInvoiceData", requestXml);
       const result = await xmlParser<{
         QueryInvoiceDataResponse: QueryInvoiceDataResponse;
       }>(response.data);
 
       return result.QueryInvoiceDataResponse;
     } catch (error) {
-      console.error("Query invoice data error:", error);
+      if (axios.isAxiosError(error)) {
+        console.error("Query invoice data Axios error:", {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+        });
+      } else {
+        console.error("Query invoice data error:", error);
+      }
       throw error;
     }
   }
