@@ -5,14 +5,10 @@
 
 import {
     // Common types
-    AtomicStringType8,
-    AtomicStringType15,
-    AtomicStringType32,
     SimpleText50NotBlankType,
     SimpleText512NotBlankType,
     GenericTimestampType,
     BusinessResultCodeType,
-    TechnicalResultCodeType,
     EntityIdType,
     LoginType,
     RequestPageType,
@@ -21,12 +17,9 @@ import {
     CurrencyType,
     CountryCodeType,
     CryptoType,
-    BasicHeaderType,
     BasicRequestType,
     BasicResponseType,
-    BasicResultType,
     TechnicalValidationResultType,
-    UserHeaderType,
     GeneralErrorHeaderResponseType,
     SimpleText100NotBlankType,
     SimpleText1024NotBlankType,
@@ -47,7 +40,7 @@ import {
     PaymentMethodType,
     DetailedAddressType,
     TaxNumberType
-} from './baseTypes';
+} from './invoiceBaseTypes';
 
 
 /**
@@ -201,6 +194,8 @@ export interface InvoiceDigestType {
     invoiceNetAmountHUF?: MonetaryType;
     invoiceVatAmount?: MonetaryType;
     invoiceVatAmountHUF?: MonetaryType;
+    invoiceGrossAmount?: MonetaryType;
+    invoiceGrossAmountHUF?: MonetaryType;
     transactionId?: EntityIdType;
     index?: InvoiceIndexType;
     originalInvoiceNumber?: SimpleText50NotBlankType;
@@ -435,24 +430,24 @@ export interface TransactionType {
 /**
  * Element interfaces
  */
-export interface GeneralErrorResponse extends GeneralErrorResponseType {}
-export interface ManageAnnulmentRequest extends ManageAnnulmentRequestType {}
-export interface ManageAnnulmentResponse extends TransactionResponseType {}
-export interface ManageInvoiceRequest extends ManageInvoiceRequestType {}
-export interface ManageInvoiceResponse extends TransactionResponseType {}
-export interface QueryInvoiceChainDigestRequest extends QueryInvoiceChainDigestRequestType {}
-export interface QueryInvoiceChainDigestResponse extends QueryInvoiceChainDigestResponseType {}
-export interface QueryInvoiceCheckRequest extends QueryInvoiceDataRequestType {}
-export interface QueryInvoiceCheckResponse extends QueryInvoiceCheckResponseType {}
-export interface QueryInvoiceDataRequest extends QueryInvoiceDataRequestType {}
-export interface QueryInvoiceDataResponse extends QueryInvoiceDataResponseType {}
-export interface QueryInvoiceDigestRequest extends QueryInvoiceDigestRequestType {}
-export interface QueryInvoiceDigestResponse extends QueryInvoiceDigestResponseType {}
-export interface QueryTaxpayerRequest extends QueryTaxpayerRequestType {}
-export interface QueryTaxpayerResponse extends QueryTaxpayerResponseType {}
-export interface QueryTransactionListRequest extends QueryTransactionListRequestType {}
-export interface QueryTransactionListResponse extends QueryTransactionListResponseType {}
-export interface QueryTransactionStatusRequest extends QueryTransactionStatusRequestType {}
-export interface QueryTransactionStatusResponse extends QueryTransactionStatusResponseType {}
-export interface TokenExchangeRequest extends BasicOnlineInvoiceRequestType {}
-export interface TokenExchangeResponse extends TokenExchangeResponseType {}
+export interface GeneralErrorResponse extends GeneralErrorResponseType { }
+export interface ManageAnnulmentRequest extends ManageAnnulmentRequestType { }
+export interface ManageAnnulmentResponse extends TransactionResponseType { }
+export interface ManageInvoiceRequest extends ManageInvoiceRequestType { }
+export interface ManageInvoiceResponse extends TransactionResponseType { }
+export interface QueryInvoiceChainDigestRequest extends QueryInvoiceChainDigestRequestType { }
+export interface QueryInvoiceChainDigestResponse extends QueryInvoiceChainDigestResponseType { }
+export interface QueryInvoiceCheckRequest extends QueryInvoiceDataRequestType { }
+export interface QueryInvoiceCheckResponse extends QueryInvoiceCheckResponseType { }
+export interface QueryInvoiceDataRequest extends QueryInvoiceDataRequestType { }
+export interface QueryInvoiceDataResponse extends QueryInvoiceDataResponseType { }
+export interface QueryInvoiceDigestRequest extends QueryInvoiceDigestRequestType { }
+export interface QueryInvoiceDigestResponse extends QueryInvoiceDigestResponseType { }
+export interface QueryTaxpayerRequest extends QueryTaxpayerRequestType { }
+export interface QueryTaxpayerResponse extends QueryTaxpayerResponseType { }
+export interface QueryTransactionListRequest extends QueryTransactionListRequestType { }
+export interface QueryTransactionListResponse extends QueryTransactionListResponseType { }
+export interface QueryTransactionStatusRequest extends QueryTransactionStatusRequestType { }
+export interface QueryTransactionStatusResponse extends QueryTransactionStatusResponseType { }
+export interface TokenExchangeRequest extends BasicOnlineInvoiceRequestType { }
+export interface TokenExchangeResponse extends TokenExchangeResponseType { }

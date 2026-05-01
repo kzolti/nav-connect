@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 
-export async function xmlParser<T>(xmlData: string): Promise<T> {
+export function xmlParser<T>(xmlData: string): T {
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: "@_",
@@ -57,6 +57,7 @@ export async function xmlParser<T>(xmlData: string): Promise<T> {
         "utilitySettlementIndicator",
         "selfBillingIndicator",
         "cashAccountingIndicator",
+        "compressedContentIndicator",
         "mergedItemIndicator",
         "lineExpressionIndicator",
         "intermediatedService",
@@ -93,11 +94,6 @@ export async function xmlParser<T>(xmlData: string): Promise<T> {
     }
   });
 
-  try {
-    const result = parser.parse(xmlData);
-    return result as T;
-  } catch (err) {
-    console.error("XML response processing error:", err);
-    throw err;
-  }
+  const result = parser.parse(xmlData);
+  return result as T;
 }

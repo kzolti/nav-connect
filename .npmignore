@@ -1,0 +1,32 @@
+# Source files
+src/
+tests/
+OSA/
+.env*
+*.key
+*.pem
+*.crt
+
+# Config files
+tsconfig.json
+.eslintrc
+.prettierrc
+.github/
+.git/
+.gitignore
+.npmrc
+
+# Development files
+node_modules/
+coverage/
+*.log
+.DS_Store
+
+# Prevent uploading any sensitive data
+**/techuser*.json
+**/techuser*.xml
+**/settings*.json
+**/credentials*.json
+
+
+*.tgz

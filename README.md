@@ -1,6 +1,6 @@
 # NAV Connect
 
-A Node.js client library for the Hungarian Tax Authority's (NAV) Online Invoice System.
+Node.js client library for the Hungarian Tax Authority's (NAV) Online Invoice System API v3.0.
 
 ## Installation
 
@@ -11,16 +11,16 @@ npm install nav-connect
 ## Requirements
 
 - Node.js >= 14.0.0
-- Valid NAV Online Invoice System credentials (technical user, exchangeKey, signatureKey)
+- NAV Online Invoice System credentials (technical user, exchangeKey, signatureKey)
 
-## Basic Usage
+## Usage
 
 ```typescript
 import NavConnect from 'nav-connect';
 
 const navClient = new NavConnect({
-  testSystem: true, // set to false for production
-  taxNumber: '12345678',  // technical user taxpayerid, The 8-digit core number section of the tax number
+  testSystem: true,
+  taxNumber: '12345678',
   technicalUser: {
     user: 'yourUserName',
     password: 'yourPassword',
@@ -28,50 +28,99 @@ const navClient = new NavConnect({
     exchangeKey: 'yourExchangeKey'
   },
   software: {
-    softwareId: 'YOUR-SOFTWARE-ID', // Must be exactly 18 characters [0-9A-Z\-]
-    softwareName: 'YourSoftwareName',      // Max 50 characters, not empty
-    softwareOperation: 'LOCAL_SOFTWARE', // Must be either 'LOCAL_SOFTWARE' or 'ONLINE_SERVICE'
-    softwareMainVersion: '1.0.0',    // Max 15 characters, not empty
-    softwareDevName: 'Your Name',    // Max 512 characters, not empty
-    softwareDevContact: 'your@email.com', // Max 200 characters, not empty
-    softwareDevCountryCode: 'HU',    // ISO-3166 alpha-2 country code
-    softwareDevTaxNumber: 'your-tax-number' // Max 50 characters
+    softwareId: 'YOUR-SOFTWARE-ID',
+    softwareName: 'YourSoftwareName',
+    softwareOperation: 'LOCAL_SOFTWARE',
+    softwareMainVersion: '1.0.0',
+    softwareDevName: 'Your Name',
+    softwareDevContact: 'your@email.com',
+    softwareDevCountryCode: 'HU',
+    softwareDevTaxNumber: '12345678'
   }
 });
+```
 
-// Example: Query invoice digest
-async function queryInvoices() {
-  try {
-    const response = await navClient.queryInvoiceDigest({
-      page: 1,
-      invoiceDirectionType: "OUTBOUND",
-      insDate: {
-        dateTimeFrom: "2025-06-01T00:00:00Z",
-        dateTimeTo: "2025-06-30T23:59:59Z",
-      },
-    });
-    console.log('Invoices:', response);
-  } catch (error) {
-    console.error('Error:', error);
+## API
+
+### queryInvoiceDigest
+
+Query invoice digests for a date range (max 35 days). Throws `NavDateRangeError` if the range exceeds 35 days.
+
+```typescript
+const response = await navClient.queryInvoiceDigest({
+  page: 1,
+  invoiceDirectionType: "OUTBOUND",
+  insDate: {
+    dateTimeFrom: "2025-06-01T00:00:00Z",
+    dateTimeTo: "2025-06-30T23:59:59Z",
+  },
+});
+```
+
+### queryInvoiceDigestAll
+
+Query invoice digests for arbitrary date ranges. Automatically splits into 35-day chunks, paginates, and throttles API calls.
+
+```typescript
+const digests = await navClient.queryInvoiceDigestAll({
+  invoiceDirectionType: "INBOUND",
+  insDate: {
+    dateTimeFrom: "2025-01-01T00:00:00Z",
+    dateTimeTo: "2025-06-01T00:00:00Z",
+  },
+  throttleMs: 7000, // delay between API calls (default: 5000ms)
+  onProgress: (p) => {
+    console.log(
+      `Chunk ${p.currentChunk}/${p.totalChunks}, ` +
+      `page ${p.currentPage}/${p.availablePages}, ` +
+      `collected: ${p.digestsCollected}`
+    );
+  },
+});
+```
+
+### queryInvoiceData
+
+Query specific invoice data by invoice number.
+
+```typescript
+const response = await navClient.queryInvoiceData({
+  invoiceNumber: "INV-2025-001",
+  invoiceDirection: "INBOUND",
+  supplierTaxNumber: "12345678",
+});
+```
+
+## Error Handling
+
+All errors extend `NavApiError`. Specific error classes:
+
+- `NavConfigError` - invalid configuration
+- `NavDateRangeError` - date range exceeds 35 days
+- `NavXmlValidationError` - request XML fails XSD validation
+- `NavApiResponseError` - NAV API returned an error (structured funcCode/errorCode/message)
+- `NavApiHttpError` - HTTP error with unparseable body
+
+```typescript
+import { NavDateRangeError, NavApiResponseError } from 'nav-connect';
+
+try {
+  await navClient.queryInvoiceDigest({ /* ... */ });
+} catch (error) {
+  if (error instanceof NavDateRangeError) {
+    // use queryInvoiceDigestAll() instead
+  }
+  if (error instanceof NavApiResponseError) {
+    console.log(error.funcCode, error.errorCode, error.message);
   }
 }
 ```
 
-## Available Endpoints
-
-Currently supported endpoint:
-- `queryInvoiceDigest` - Query invoice data with filtering options
-
 ## License
 
-Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
-
-### Attribution Requirements
-When using this software, you must give appropriate credit to:
-- Author: Zoltán István KADA
-- Company: kAdatSoft
-- Repository: https://github.com/kzolti/nav-connect
+Apache License 2.0 - see [LICENSE](LICENSE).
 
 ## Author
 
-Zoltán István KADA (kAdatSoft)
+Zoltan Istvan KADA (kAdatSoft)
+https://github.com/kzolti/nav-connect
