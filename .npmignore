@@ -1,7 +1,8 @@
 # Source files
-src/
 tests/
-OSA/
+src/test-*.ts
+
+# Sensitive files
 .env*
 *.key
 *.pem

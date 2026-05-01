@@ -15,10 +15,12 @@ npm install nav-connect
 
 ## Usage
 
+`nav-connect` uses `libxml2-wasm` for XSD validation, which requires asynchronous initialization. Use the static `create` method to instantiate the client:
+
 ```typescript
 import NavConnect from 'nav-connect';
 
-const navClient = new NavConnect({
+const navClient = await NavConnect.create({
   testSystem: true,
   taxNumber: '12345678',
   technicalUser: {

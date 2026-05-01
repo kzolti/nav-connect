@@ -1,7 +1,8 @@
 import path, { dirname } from "path";
 import axios, { AxiosInstance } from "axios";
 import * as crypto from "crypto";
-import * as libxmljs from "libxmljs2";
+import type { XsdValidator } from "libxml2-wasm";
+let libxml2_wasm_module: any = null;
 import { XMLBuilder } from "fast-xml-parser";
 import { existsSync, readdirSync, readFileSync } from "fs";
 import {
@@ -72,9 +73,9 @@ export enum XsdSchema {
   Data = "data",
 }
 
-interface XsdDocuments extends Map<XsdSchema, libxmljs.Document> {
-  set(key: XsdSchema, value: libxmljs.Document): this;
-  get(key: XsdSchema): libxmljs.Document | undefined;
+interface XsdDocuments extends Map<XsdSchema, XsdValidator> {
+  set(key: XsdSchema, value: XsdValidator): this;
+  get(key: XsdSchema): XsdValidator | undefined;
 }
 
 export { xmlParser } from "./xmlParser";
@@ -88,7 +89,26 @@ class NavConnect {
   private xsdDocs: XsdDocuments;
   private _client: AxiosInstance;
 
+  static async create(config: NavApiConfig): Promise<NavConnect> {
+    if (!libxml2_wasm_module) {
+      libxml2_wasm_module = await new Function('return import("libxml2-wasm")')();
+      
+      // Register Node.js filesystem provider to allow libxml2 to resolve XSD imports from the host FS
+      try {
+        const { xmlRegisterFsInputProviders } = await new Function('return import("libxml2-wasm/lib/nodejs.mjs")')();
+        xmlRegisterFsInputProviders();
+      } catch (e) {
+        // Fallback for different package structures or environments
+        console.warn('Note: Could not register libxml2-wasm Node.js FS provider. XSD imports might fail if not absolute.', e);
+      }
+    }
+    return new NavConnect(config);
+  }
+
   constructor(config: NavApiConfig) {
+    if (!libxml2_wasm_module) {
+      throw new Error("NavConnect must be instantiated using await NavConnect.create(config)");
+    }
     // Validate configuration
     this.validateConfig(config);
     
@@ -278,14 +298,13 @@ class NavConnect {
         }
 
         // Parse XSD
-        const xsdDoc = libxmljs.parseXml(xsdBuffer.toString(), {
-          baseUrl,
-          noblanks: true,
-          nonet: true,
-          huge: true,
+        const xsdDoc = libxml2_wasm_module.XmlDocument.fromBuffer(xsdBuffer, {
+          url: xsdPath,
+          option: libxml2_wasm_module.ParseOption.XML_PARSE_NOBLANKS | libxml2_wasm_module.ParseOption.XML_PARSE_NONET | libxml2_wasm_module.ParseOption.XML_PARSE_HUGE
         });
+        const xsdValidator = libxml2_wasm_module.XsdValidator.fromDoc(xsdDoc);
 
-        this.xsdDocs.set(schemaType, xsdDoc);
+        this.xsdDocs.set(schemaType, xsdValidator);
       } catch (error) {
         loadErrors.push(
           `Failed to load ${path.basename(xsdPath)}: ${error instanceof Error ? error.message : String(error)}`
@@ -416,20 +435,27 @@ class NavConnect {
   }
 
   generateAndValidateXml<T>(requestType: string, data: T, schemaType: XsdSchema): string {
-    const xsdDoc = this.xsdDocs.get(schemaType);
-    if (!xsdDoc) {
+    const xsdValidator = this.xsdDocs.get(schemaType);
+    if (!xsdValidator) {
       throw new NavApiError(`XSD schema not found: ${schemaType}`);
     }
     const xml = this._builder.build({
       [requestType]: data,
     });
-    const xmlDoc = libxmljs.parseXml(xml, {
-      noblanks: true,
-      nonet: true,
-    });
-    const isValid = xmlDoc.validate(xsdDoc);
-    if (!isValid) {
-      const errors = xmlDoc.validationErrors.map((error) => error.message);
+    
+    let xmlDoc;
+    try {
+      xmlDoc = libxml2_wasm_module.XmlDocument.fromString(xml, {
+        option: libxml2_wasm_module.ParseOption.XML_PARSE_NOBLANKS | libxml2_wasm_module.ParseOption.XML_PARSE_NONET
+      });
+      xsdValidator.validate(xmlDoc);
+      xmlDoc.dispose();
+    } catch (e: any) {
+      if (xmlDoc) xmlDoc.dispose();
+      let errors = [e instanceof Error ? e.message : String(e)];
+      if (e instanceof libxml2_wasm_module.XmlValidateError && e.details) {
+        errors = e.details.map((d: any) => d.message.trim());
+      }
       throw new NavXmlValidationError(requestType, errors);
     }
 
@@ -716,22 +742,23 @@ class NavConnect {
    */
   private validateResponseXml(xml: string, schemaType: XsdSchema): string[] {
     try {
-      const xsdDoc = this.xsdDocs.get(schemaType);
-      if (!xsdDoc) return [`XSD schema not found for response validation: ${schemaType}`];
+      const xsdValidator = this.xsdDocs.get(schemaType);
+      if (!xsdValidator) return [`XSD schema not found for response validation: ${schemaType}`];
 
-      const xmlDoc = libxmljs.parseXml(xml, {
-        noblanks: true,
-        nonet: true,
+      const xmlDoc = libxml2_wasm_module.XmlDocument.fromString(xml, {
+        option: libxml2_wasm_module.ParseOption.XML_PARSE_NOBLANKS | libxml2_wasm_module.ParseOption.XML_PARSE_NONET
       });
-
-      const isValid = xmlDoc.validate(xsdDoc);
-      if (!isValid) {
-        return xmlDoc.validationErrors.map(
-          (error) => `[Response XML validation] ${error.message?.trim()}`
-        );
+      
+      try {
+        xsdValidator.validate(xmlDoc);
+      } finally {
+        xmlDoc.dispose();
       }
-    } catch (error) {
-      return [`[Response XML validation] Parse error: ${error instanceof Error ? error.message : String(error)}`];
+    } catch (e: any) {
+      if (e instanceof libxml2_wasm_module.XmlValidateError && e.details) {
+        return e.details.map((d: any) => `[Response XML validation] ${d.message.trim()}`);
+      }
+      return [`[Response XML validation] Parse error: ${e instanceof Error ? e.message : String(e)}`];
     }
     return [];
   }
