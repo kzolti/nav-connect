@@ -42,6 +42,10 @@ const navClient = await NavConnect.create({
 });
 ```
 
+## Dependencies
+
+`nav-connect` depends on [`nav-osa-types`](https://github.com/kzolti/nav-osa-types) for shared NAV OSA type definitions, XML parsing, and XSD schemas.
+
 ## API
 
 ### queryInvoiceDigest
@@ -100,6 +104,7 @@ All errors extend `NavApiError`. Specific error classes:
 - `NavConfigError` - invalid configuration
 - `NavDateRangeError` - date range exceeds 35 days
 - `NavXmlValidationError` - request XML fails XSD validation
+- `NavResponseXmlValidationError` - NAV API response XML fails XSD validation
 - `NavApiResponseError` - NAV API returned an error (structured funcCode/errorCode/message)
 - `NavApiHttpError` - HTTP error with unparseable body
 
