@@ -17,10 +17,14 @@ import {
   QueryInvoiceDigestRequest,
   QueryInvoiceDigestResponse,
   SoftwareType,
-} from "./osaTypes/invoiceApiTypes";
-import { BasicRequestType, BasicResultType, EntityIdType } from "./osaTypes/commonTypes";
-import { xmlParser } from "./xmlParser";
-import { NavApiError, NavApiResponseError, NavApiHttpError, NavXmlValidationError, NavConfigError, NavDateRangeError } from "./errors";
+  BasicRequestType,
+  BasicResultType,
+  EntityIdType,
+  xmlParser,
+} from "nav-osa-types";
+import { getXsdPath } from "nav-osa-types";
+import { NavApiError, NavApiResponseError, NavApiHttpError, NavXmlValidationError, NavResponseXmlValidationError, NavConfigError, NavDateRangeError } from "./errors";
+import { XmlValidationError } from "nav-osa-types";
 
 /** Maximum date range in days allowed by the NAV API for queryInvoiceDigest */
 const MAX_DIGEST_RANGE_DAYS = 35;
@@ -78,8 +82,8 @@ interface XsdDocuments extends Map<XsdSchema, XsdValidator> {
   get(key: XsdSchema): XsdValidator | undefined;
 }
 
-export { xmlParser } from "./xmlParser";
-export { NavApiError, NavApiResponseError, NavApiHttpError, NavXmlValidationError, NavConfigError, NavDateRangeError } from "./errors";
+export { xmlParser } from "nav-osa-types";
+export { NavApiError, NavApiResponseError, NavApiHttpError, NavXmlValidationError, NavResponseXmlValidationError, NavConfigError, NavDateRangeError } from "./errors";
 
 class NavConnect {
   private _config: NavApiConfig;
@@ -124,7 +128,7 @@ class NavConnect {
       },
     });
 
-    this._schemaDir = path.resolve(__dirname, "..", "OSA", "xsd");
+    this._schemaDir = path.dirname(getXsdPath('common'));
     this.xsdDocs = new Map();
 
     // Load XSD schemas with detailed error handling
@@ -230,17 +234,8 @@ class NavConnect {
         `XSD schema directory not found: ${this._schemaDir}\n` +
         `This usually happens when:\n` +
         `1. The package was not installed correctly\n` +
-        `2. The OSA/xsd directory is missing from the package\n` +
+        `2. The nav-osa-types dependency is missing\n` +
         `3. The package is being used from a non-standard location\n\n` +
-        `Expected directory structure:\n` +
-        `  node_modules/nav-connect/\n` +
-        `    build/\n` +
-        `    OSA/\n` +
-        `      xsd/\n` +
-        `        common.xsd\n` +
-        `        data.xsd\n` +
-        `        invoiceApi.xsd\n` +
-        `        invoiceBase.xsd\n\n` +
         `Please reinstall the package or check the installation.`
       );
     }
@@ -467,7 +462,7 @@ class NavConnect {
    * Tries to extract the structured GeneralErrorResponse from the XML body.
    * Falls back to NavApiHttpError if the body cannot be parsed.
    */
-  private handleAxiosError(error: import("axios").AxiosError): never {
+  private async handleAxiosError(error: import("axios").AxiosError): Promise<never> {
     const status = error.response?.status;
     const statusText = error.response?.statusText;
     const rawBody = typeof error.response?.data === "string" ? error.response.data : undefined;
@@ -475,7 +470,7 @@ class NavConnect {
     // Try to parse the XML error body
     if (rawBody) {
       try {
-        const parsed = xmlParser<{ GeneralErrorResponse?: GeneralErrorResponseType }>(rawBody);
+        const parsed = await xmlParser<{ GeneralErrorResponse?: GeneralErrorResponseType }>(rawBody);
         const errResp = parsed.GeneralErrorResponse;
         if (errResp?.result) {
           throw new NavApiResponseError({
@@ -490,6 +485,10 @@ class NavConnect {
         // If it's already a NavApiResponseError, rethrow
         if (parseErr instanceof NavApiResponseError) {
           throw parseErr;
+        }
+        // If it's an XmlValidationError, rethrow as NavResponseXmlValidationError
+        if (parseErr instanceof XmlValidationError) {
+          throw new NavResponseXmlValidationError(parseErr.errors);
         }
         // Otherwise fall through to generic HTTP error
       }
@@ -533,9 +532,9 @@ class NavConnect {
 
         const xmlValidationWarnings = this.validateResponseXml(response.data, XsdSchema.InvoiceApi);
 
-        const result = xmlParser<{
+        const result = await xmlParser<{
           QueryInvoiceDigestResponse: QueryInvoiceDigestResponse;
-        }>(response.data);
+        }>(response.data, { validate: false });
 
         this.checkResponseResult(result.QueryInvoiceDigestResponse?.result);
 
@@ -545,7 +544,10 @@ class NavConnect {
         };
       } catch (error) {
         if (error instanceof NavApiError) throw error;
-        if (axios.isAxiosError(error)) this.handleAxiosError(error);
+        if (error instanceof XmlValidationError) {
+          throw new NavResponseXmlValidationError(error.errors);
+        }
+        if (axios.isAxiosError(error)) await this.handleAxiosError(error);
         throw new NavApiError("queryInvoiceDigest failed", error);
       }
     }
@@ -705,9 +707,9 @@ class NavConnect {
 
         const xmlValidationWarnings = this.validateResponseXml(response.data, XsdSchema.InvoiceApi);
 
-        const result = xmlParser<{
+        const result = await xmlParser<{
           QueryInvoiceDataResponse: QueryInvoiceDataResponse;
-        }>(response.data);
+        }>(response.data, { validate: false });
 
         this.checkResponseResult(result.QueryInvoiceDataResponse?.result);
 
@@ -717,7 +719,10 @@ class NavConnect {
         };
       } catch (error) {
         if (error instanceof NavApiError) throw error;
-        if (axios.isAxiosError(error)) this.handleAxiosError(error);
+        if (error instanceof XmlValidationError) {
+          throw new NavResponseXmlValidationError(error.errors);
+        }
+        if (axios.isAxiosError(error)) await this.handleAxiosError(error);
         throw new NavApiError("queryInvoiceData failed", error);
       }
     }

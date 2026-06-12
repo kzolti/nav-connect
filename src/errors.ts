@@ -1,5 +1,5 @@
-import { FunctionCodeType, TechnicalValidationResultType } from "./osaTypes/commonTypes";
-import { BusinessValidationResultType } from "./osaTypes/invoiceApiTypes";
+import { FunctionCodeType, TechnicalValidationResultType } from "nav-osa-types";
+import { BusinessValidationResultType } from "nav-osa-types";
 
 /**
  * Base error class for all NAV API errors.
@@ -77,6 +77,22 @@ export class NavXmlValidationError extends NavApiError {
     this.name = "NavXmlValidationError";
     this.requestType = requestType;
     this.validationErrors = validationErrors;
+  }
+}
+
+/**
+ * Thrown when the NAV API response XML fails XSD validation during parsing.
+ * Wraps the XmlValidationError from nav-osa-types.
+ */
+export class NavResponseXmlValidationError extends NavApiError {
+  public readonly validationErrors: string[];
+  public readonly xsdPath?: string;
+
+  constructor(validationErrors: string[], xsdPath?: string) {
+    super(`NAV API response XML validation failed${xsdPath ? ` against ${xsdPath}` : ""}:\n${validationErrors.join("\n")}`);
+    this.name = "NavResponseXmlValidationError";
+    this.validationErrors = validationErrors;
+    this.xsdPath = xsdPath;
   }
 }
 
