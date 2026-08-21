@@ -122,7 +122,7 @@ const response: NavApiResponse<QueryInvoiceDigestResponse> = await navClient.que
   },
 });
 
-console.log(response.data.invoiceDigestResult.invoiceDigest);
+console.log(response.data.invoiceDigestResult[0].invoiceDigest);
 ```
 
 ### queryInvoiceDigestAll
