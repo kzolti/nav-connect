@@ -16,6 +16,7 @@ tsconfig.json
 .git/
 .gitignore
 .npmrc
+.*/
 
 # Development files
 node_modules/

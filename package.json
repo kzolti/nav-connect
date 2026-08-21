@@ -1,20 +1,25 @@
 {
   "name": "nav-connect",
-  "version": "3.0.1",
-  "description": "Nav Online Invoice client",
+  "version": "4.0.0",
+  "type": "module",
+  "description": "Nav Online Invoice connection module",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js",
+      "default": "./build/index.js"
+    }
+  },
   "files": [
     "build/**/*",
-    "OSA/**/*.xsd",
-    "OSA/**/*.wadl",
-    "OSA/catalog.xml",
     "LICENSE",
     "README.md"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node src/index.ts",
+    "test": "node --import tsx --test test/*.ts",
+    "typecheck": "tsc --noEmit",
     "build": "rimraf build && ./node_modules/.bin/tsc",
     "prepare": "npm run build",
     "release:patch": "npm version patch && git push && git push --tags && npm publish",
@@ -39,18 +44,29 @@
     "url": "git+https://github.com/kzolti/nav-connect.git"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=20.11.0"
   },
+  "funding": [
+    {
+      "type": "Buy me a coffee (Revolut)",
+      "url": "https://revolut.me/zoltnifdgo?note=nav-connect"
+    },
+    {
+      "type": "Buy me a coffee (GitHub)",
+      "url": "https://github.com/sponsors/kzolti"
+    }
+  ],
   "dependencies": {
     "axios": "^1.9.0",
-    "fast-xml-parser": "^5.2.5",
-    "libxml2-wasm": "^0.7.1",
-    "nav-osa-types": "^1.1.0"
+    "nav-osa-core": "^0.2.5"
+  },
+  "peerDependencies": {
+    "nav-osa-types": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.30",
     "rimraf": "^6.1.2",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.23.12",
     "typescript": "^5.8.3"
   }
 }

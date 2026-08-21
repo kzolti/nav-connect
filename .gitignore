@@ -3,8 +3,13 @@ node_modules
 build
 *.log
 
-yarn.lock
+# Lock files
 package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+bun.lock
 *.xml
 
 *.tgz

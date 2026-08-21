@@ -1,5 +1,4 @@
-import { FunctionCodeType, TechnicalValidationResultType } from "nav-osa-types";
-import { BusinessValidationResultType } from "nav-osa-types";
+import type { FunctionCodeType, TechnicalValidationResultType } from "nav-osa-types";
 
 /**
  * Base error class for all NAV API errors.
@@ -12,6 +11,19 @@ export class NavApiError extends Error {
 }
 
 /**
+ * Thrown when the HTTP request times out (httpTimeoutMs exceeded).
+ */
+export class NavApiTimeoutError extends NavApiError {
+  public readonly timeoutMs: number;
+
+  constructor(timeoutMs: number) {
+    super(`NAV API request timed out after ${timeoutMs}ms`);
+    this.name = "NavApiTimeoutError";
+    this.timeoutMs = timeoutMs;
+  }
+}
+
+/**
  * Thrown when the NAV API returns an HTTP error with a parseable XML error body.
  * Contains the structured funcCode, errorCode, message, and optional validation messages.
  */
@@ -20,7 +32,6 @@ export class NavApiResponseError extends NavApiError {
   public readonly errorCode?: string;
   public readonly httpStatus?: number;
   public readonly technicalValidationMessages?: TechnicalValidationResultType[];
-  public readonly businessValidationMessages?: BusinessValidationResultType[];
 
   constructor(params: {
     funcCode: FunctionCodeType;
@@ -28,7 +39,6 @@ export class NavApiResponseError extends NavApiError {
     message?: string;
     httpStatus?: number;
     technicalValidationMessages?: TechnicalValidationResultType[];
-    businessValidationMessages?: BusinessValidationResultType[];
   }) {
     const msg = [
       `NAV API error [${params.funcCode}]`,
@@ -44,7 +54,6 @@ export class NavApiResponseError extends NavApiError {
     this.errorCode = params.errorCode;
     this.httpStatus = params.httpStatus;
     this.technicalValidationMessages = params.technicalValidationMessages;
-    this.businessValidationMessages = params.businessValidationMessages;
   }
 }
 
@@ -56,8 +65,8 @@ export class NavApiHttpError extends NavApiError {
   public readonly statusText?: string;
   public readonly responseBody?: string;
 
-  constructor(httpStatus: number, statusText?: string, responseBody?: string) {
-    super(`NAV API HTTP error ${httpStatus}${statusText ? ` ${statusText}` : ""}`);
+  constructor(httpStatus: number, statusText?: string, responseBody?: string, cause?: unknown) {
+    super(`NAV API HTTP error ${httpStatus}${statusText ? ` ${statusText}` : ""}`, cause);
     this.name = "NavApiHttpError";
     this.httpStatus = httpStatus;
     this.statusText = statusText;
@@ -82,7 +91,7 @@ export class NavXmlValidationError extends NavApiError {
 
 /**
  * Thrown when the NAV API response XML fails XSD validation during parsing.
- * Wraps the XmlValidationError from nav-osa-types.
+ * Wraps the XmlValidationError from nav-osa-core.
  */
 export class NavResponseXmlValidationError extends NavApiError {
   public readonly validationErrors: string[];
