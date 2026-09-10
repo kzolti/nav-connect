@@ -69,7 +69,7 @@ void describe("NavConnect request queue survives a failed throttled call", () =>
     });
 
     await assert.rejects(
-      () => client.queryTaxpayer({ taxNumber: "12345678" }),
+      () => client.queryTaxpayer({ taxNumber: "15789934" }),
       (err: unknown) => {
         assert.ok(err instanceof NavApiHttpError, "expected a NavApiHttpError from the failed throttled call");
         assert.equal((err as NavApiHttpError).httpStatus, 500);
@@ -77,7 +77,7 @@ void describe("NavConnect request queue survives a failed throttled call", () =>
       }
     );
 
-    const second = await client.queryTaxpayer({ taxNumber: "12345678" });
+    const second = await client.queryTaxpayer({ taxNumber: "15789934" });
     assert.equal(second.data.result.funcCode, "OK");
 
     assert.equal(requestCount, 2, "the failed call must not stall the queue");

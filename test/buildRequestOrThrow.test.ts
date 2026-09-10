@@ -66,7 +66,7 @@ void describe("NavConnect request XML building (integration)", () => {
   void it("builds valid request XML and posts it to the API", async () => {
     const client = NavConnect.create({ ...testConfig, baseUrlOverride: url, minIntervalMs: 0, httpTimeoutMs: 5000 });
 
-    await client.queryTaxpayer({ taxNumber: "12345678" });
+    await client.queryTaxpayer({ taxNumber: "15789934" });
 
     assert.ok(requestedBody.includes("<QueryTaxpayerRequest"));
     assert.ok(requestedBody.includes("<common:header>"));

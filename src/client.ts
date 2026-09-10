@@ -32,8 +32,10 @@ import { ApiRequestType, XsdSchemaName, validateXml, XmlValidationError } from "
 import {
   NavApiError,
   NavResponseXmlValidationError,
+  NavTaxNumberValidationError,
   NavXmlValidationError,
 } from "./errors.js";
+import { validateHuTaxNumber } from "./huTaxNumber.js";
 import { DEFAULT_HTTP_TIMEOUT_MS, validateNavApiConfig } from "./configValidator.js";
 import type { NavApiConfig } from "./configValidator.js";
 import { decodeExchangeToken } from "./crypto.js";
@@ -424,6 +426,14 @@ export class NavConnect {
   async queryTaxpayer(params: {
     taxNumber: string;
   }): Promise<NavApiResponse<QueryTaxpayerResponse>> {
+    const validation = validateHuTaxNumber(params.taxNumber);
+    if (!validation.valid) {
+      throw new NavTaxNumberValidationError(
+        validation.errorCode ?? "TAX_NUMBER_INVALID_FORMAT",
+        `taxNumber: ${params.taxNumber}`
+      );
+    }
+
     const reqObj: QueryTaxpayerRequest = {
       ...createBasicOnlineInvoiceRequest(this._config),
       taxNumber: params.taxNumber,

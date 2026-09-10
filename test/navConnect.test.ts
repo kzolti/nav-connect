@@ -62,9 +62,9 @@ void describe("NavConnect rate limiter", () => {
     timestamps.length = 0;
 
     await Promise.allSettled([
-      client.queryTaxpayer({ taxNumber: "12345678" }),
-      client.queryTaxpayer({ taxNumber: "12345678" }),
-      client.queryTaxpayer({ taxNumber: "12345678" }),
+      client.queryTaxpayer({ taxNumber: "15789934" }),
+      client.queryTaxpayer({ taxNumber: "15789934" }),
+      client.queryTaxpayer({ taxNumber: "15789934" }),
     ]);
 
     assert.equal(timestamps.length, 3, "server should have received 3 requests");
@@ -85,9 +85,9 @@ void describe("NavConnect rate limiter", () => {
 
     const start = Date.now();
     await Promise.allSettled([
-      client.queryTaxpayer({ taxNumber: "12345678" }),
-      client.queryTaxpayer({ taxNumber: "12345678" }),
-      client.queryTaxpayer({ taxNumber: "12345678" }),
+      client.queryTaxpayer({ taxNumber: "15789934" }),
+      client.queryTaxpayer({ taxNumber: "15789934" }),
+      client.queryTaxpayer({ taxNumber: "15789934" }),
     ]);
     const elapsed = Date.now() - start;
 
@@ -122,7 +122,7 @@ void describe("NavConnect timeout", () => {
     const client = NavConnect.create({ ...testConfig, httpTimeoutMs: 100, minIntervalMs: 0, baseUrlOverride: url });
 
     await assert.rejects(
-      () => client.queryTaxpayer({ taxNumber: "12345678" }),
+      () => client.queryTaxpayer({ taxNumber: "15789934" }),
       (err: unknown) => {
         assert.ok(err instanceof NavApiTimeoutError);
         assert.equal((err as NavApiTimeoutError).timeoutMs, 100);

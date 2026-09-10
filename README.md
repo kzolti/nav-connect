@@ -336,6 +336,10 @@ console.log(response.data.transactionListResult.transaction);
 
 Query taxpayer information by tax number.
 
+The 8-digit trunk is validated locally before sending (format + CDV check
+digit — see `validateHuTaxNumber`). An invalid number throws
+`NavTaxNumberValidationError` (status 400) and no NAV request is sent.
+
 ```typescript
 import type { NavApiResponse } from 'nav-connect';
 import type { QueryTaxpayerResponse } from 'nav-osa-types';

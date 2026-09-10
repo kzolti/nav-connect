@@ -106,6 +106,22 @@ export class NavResponseXmlValidationError extends NavApiError {
 }
 
 /**
+ * Thrown when a Hungarian tax number fails local validation (format, VAT
+ * code, or CDV check digit) before any NAV request is sent.
+ * Carries statusCode 400 so HTTP layers can map it to a client error.
+ */
+export class NavTaxNumberValidationError extends NavApiError {
+  public readonly statusCode = 400;
+  public readonly errorCode: string;
+
+  constructor(errorCode: string, detail?: string) {
+    super(`Invalid Hungarian tax number [${errorCode}]${detail ? ` - ${detail}` : ""}`);
+    this.name = "NavTaxNumberValidationError";
+    this.errorCode = errorCode;
+  }
+}
+
+/**
  * Thrown when the NavApiConfig is invalid.
  */
 export class NavConfigError extends NavApiError {

@@ -123,7 +123,7 @@ void describe("NavConnect validateResponse option", () => {
   void it("attaches no xmlValidationWarnings by default", async () => {
     const client = NavConnect.create({ ...testConfig, baseUrlOverride: url, minIntervalMs: 0, httpTimeoutMs: 5000 });
 
-    const response = await client.queryTaxpayer({ taxNumber: "12345678" });
+    const response = await client.queryTaxpayer({ taxNumber: "15789934" });
 
     assert.ok(!("xmlValidationWarnings" in response), "no warnings expected with validation disabled by default");
   });
@@ -137,7 +137,7 @@ void describe("NavConnect validateResponse option", () => {
       validateResponse: true,
     });
 
-    const response = await client.queryTaxpayer({ taxNumber: "12345678" });
+    const response = await client.queryTaxpayer({ taxNumber: "15789934" });
 
     assert.ok(
       response.xmlValidationWarnings && response.xmlValidationWarnings.length > 0,
@@ -154,7 +154,7 @@ void describe("NavConnect validateResponse option", () => {
       validateResponse: false,
     });
 
-    const response = await client.queryTaxpayer({ taxNumber: "12345678" });
+    const response = await client.queryTaxpayer({ taxNumber: "15789934" });
 
     assert.ok(!("xmlValidationWarnings" in response), "no warnings expected with validation disabled");
   });

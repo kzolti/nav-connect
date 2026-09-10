@@ -91,7 +91,7 @@ void describe("NavConnect GeneralErrorResponse (HTTP 200)", () => {
     const client = NavConnect.create({ ...testConfig, baseUrlOverride: url, minIntervalMs: 0, httpTimeoutMs: 5000 });
 
     await assert.rejects(
-      () => client.queryTaxpayer({ taxNumber: "12345678" }),
+      () => client.queryTaxpayer({ taxNumber: "15789934" }),
       (err: unknown) => {
         assert.ok(err instanceof NavApiResponseError);
         assert.equal((err as NavApiResponseError).errorCode, "INVALID_USER_OR_PASSWORD");
