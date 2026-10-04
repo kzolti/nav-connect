@@ -60,10 +60,12 @@
     "axios": "^1.9.0"
   },
   "peerDependencies": {
-    "nav-osa-core": "^0.2.6",
-    "nav-osa-types": "^2.0.1"
+    "nav-osa-core": "workspace:^",
+    "nav-osa-types": "workspace:^"
   },
   "devDependencies": {
+    "nav-osa-core": "workspace:^",
+    "nav-osa-types": "workspace:^",
     "@types/node": "^22.15.30",
     "rimraf": "^6.1.2",
     "tsx": "^4.23.12",
